@@ -66,17 +66,17 @@ func menu(client *lib.Event, m *lib.IMessage) {
 		str += "\n"
 	}
 	var isImage = waProto.ContextInfo_ExternalAdReplyInfo_IMAGE
-	client.SendText(m.From, strings.TrimSpace(str), &waProto.ContextInfo{
-		ExternalAdReply: &waProto.ContextInfo_ExternalAdReplyInfo{
-			Title:                 proto.String("Bot WhatsApp 2023"),
-			Body:                  proto.String("Simple WhatsApp Bot"),
-			MediaType:             &isImage,
-			ThumbnailUrl:          proto.String("https://i.pinimg.com/564x/23/44/ff/2344ff68c03a2b12fc66f578ca986008.jpg"),
-			MediaUrl:              proto.String("https://wa.me/stickerpack/inc.dev"),
-			SourceUrl:             proto.String("https://id.pinterest.com/pin/1150669773530593386/"),
-			ShowAdAttribution:     proto.Bool(true),
-			RenderLargerThumbnail: proto.Bool(true),
-		}})
+  client.SendText(m.From, strings.TrimSpace(str), &waProto.ContextInfo{
+    ExternalAdReply: &waProto.ContextInfo_ExternalAdReplyInfo{
+      Title:                 proto.String("Bot WhatsApp 2023"),
+      Body:                  proto.String("Simple WhatsApp Bot"),
+      MediaType:             &isImage,
+      ThumbnailUrl:          proto.String("https://i.pinimg.com/originals/68/34/5b/68345b78716d3ba1afff69b08c0d8451.jpg"),
+      MediaUrl:              proto.String("https://wa.me/stickerpack/inc.dev"),
+      SourceUrl:             proto.String("https://id.pinterest.com/pin/577305246008663883/"),
+      ShowAdAttribution:     proto.Bool(true),
+      RenderLargerThumbnail: proto.Bool(true),
+    }})
 }
 
 func init() {
