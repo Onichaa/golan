@@ -1,16 +1,15 @@
 package download
 
 import (
-	"inc/lib"
+"inc/lib"
   "fmt"
   "net/http"
    "encoding/json"
- // "net/url"
- // "strconv"
   "io/ioutil"
- // "time"
   "strings"
- // "os"
+  "os"
+  "bytes"
+  "os/exec"
 )
 
 func init() {
@@ -24,20 +23,17 @@ func init() {
 		IsWaitt:  true,
 		Exec: func(client *lib.Event, m *lib.IMessage) {
 
+      
       if !strings.Contains(m.Querry, "tiktok") {
           m.Reply("Itu bukan link tiktok")
         return
-      }
-
-      
+      }  
 
 
 type Stats struct {
 	LikeCount    string `json:"likeCount"`
-	CommentCount string `json:"commentCount"`
 	ShareCount   int    `json:"shareCount"`
 	PlayCount    string `json:"playCount"`
-	SaveCount    string `json:"saveCount"`
 }
 
 type Video struct {
@@ -50,6 +46,12 @@ type Video struct {
 	Height      int    `json:"height"`
 	Duration    int    `json:"duration"`
 	Ratio       string `json:"ratio"`
+}
+      
+type Image struct {
+  URL    string `json:"url"`
+  Width  int    `json:"width"`
+  Height int    `json:"height"`
 }
 
 type Music struct {
@@ -73,21 +75,21 @@ type Author struct {
 	AvatarThumb string `json:"avatar_thumb"`
 }
 
-      type TikTokVideo struct {
+type TikTokVideo struct {
 	ID            int64  `json:"id"`
 	Title         string `json:"title"`
 	URL           string `json:"url"`
 	CreatedAt     string `json:"created_at"`
 	Stats         Stats  `json:"stats"`
 	Video         Video  `json:"video"`
+  Image        []Image `json:"images"`
 	Music         Music  `json:"music"`
 	Author        Author `json:"author"`
 }
         
-      
-	tikTokURL := "https://api.tiklydown.eu.org/api/download?url="+m.Querry
 
-	resp, err := http.Get(tikTokURL)
+
+	resp, err := http.Get("https://api.tiklydown.eu.org/api/download?url="+m.Querry)
 	if err != nil {
 		fmt.Println("Error making GET request:", err)
 		return
@@ -100,129 +102,79 @@ type Author struct {
 		return
 	}
 
-	var tikTokVideo TikTokVideo
-	err = json.Unmarshal(body, &tikTokVideo)
+	var data TikTokVideo
+	err = json.Unmarshal(body, &data)
 	if err != nil {
     fmt.Println(err)
     }
-      //fmt.Println(tikTokVideo.Video.NoWatermark)
-      bytes, err := client.GetBytes(tikTokVideo.Video.NoWatermark)
-			if err != nil {
-				m.Reply(err.Error())
-				return
-			}
-			client.SendVideo(m.From, bytes, " ", m.ID)
-      /*
+
       
-      type TikTokData struct {
-        Creator       string `json:"creator"`
-        Code          int    `json:"code"`
-        Msg           string `json:"msg"`
-        ProcessedTime float64 `json:"processed_time"`
-        Data          struct {
-          ID              string `json:"id"`
-          Region          string `json:"region"`
-          Title           string `json:"title"`
-          Cover           string `json:"cover"`
-          OriginCover     string `json:"origin_cover"`
-          Duration        int    `json:"duration"`
-          Play            string `json:"play"`
-          WmPlay          string `json:"wmplay"`
-          HdPlay          string `json:"hdplay"`
-          Size            int    `json:"size"`
-          WmSize          int    `json:"wm_size"`
-          HdSize          int    `json:"hd_size"`
-          Music           string `json:"music"`
-          MusicInfo       struct {
-            ID       string `json:"id"`
-            Title    string `json:"title"`
-            Play     string `json:"play"`
-            Cover    string `json:"cover"`
-            Author   string `json:"author"`
-            Original bool   `json:"original"`
-            Duration int    `json:"duration"`
-            Album    string `json:"album"`
-          } `json:"music_info"`
-          PlayCount     int `json:"play_count"`
-          DiggCount     int `json:"digg_count"`
-          CommentCount  int `json:"comment_count"`
-          ShareCount    int `json:"share_count"`
-          DownloadCount int `json:"download_count"`
-          CollectCount  int `json:"collect_count"`
-          CreateTime    int `json:"create_time"`
+      //IMAGES
+      for i, Images := range data.Image {
+        fmt.Printf("Image %d:\n", i+1)
 
-          Author              struct {
-            ID        string `json:"id"`
-            UniqueID  string `json:"unique_id"`
-            Nickname  string `json:"nickname"`
-            Avatar    string `json:"avatar"`
-          } `json:"author"`
-          Images    []string `json:"images"`
-        } `json:"data"`
-      }
+        resp, err := http.Get(Images.URL)
+        if err != nil {
+          fmt.Println("Error:", err)
+          return
+        }
+        defer resp.Body.Close()
 
-        url := "https://skizo.tech/api/tiktok?url="+url.QueryEscape(m.Querry)+"&apikey="+os.Getenv("KEY")
-
-      response, err := http.Get(url)
+        data, err := ioutil.ReadAll(resp.Body)
       if err != nil {
-        fmt.Println("Error:", err)
+        fmt.Println("Error reading response body:", err)
         return
       }
-      defer response.Body.Close()
-    
+  
+        randomPng := "./" + lib.GetRandomString(5) + ".png"
+        randomWebp := "./" + lib.GetRandomString(5) + ".webp"
 
-      body, err := ioutil.ReadAll(response.Body)
-      if err != nil {
-        fmt.Println("Error:", err)
-        return
-      }
-      
+        if err := os.WriteFile(randomWebp, data, 0600); err != nil {
+            fmt.Printf("Failed to save image: %v", err)
+            return
+        }
 
-      var tiktokData TikTokData
-      err = json.Unmarshal(body, &tiktokData)
-      if err != nil {
-        fmt.Println("Error:", err)
-        return
-      }
-      
+          // Run ffmpeg command
+          cmd := exec.Command("ffmpeg", "-i", randomWebp, randomPng)
+          var out bytes.Buffer
+          var stderr bytes.Buffer
+          cmd.Stdout = &out
+          cmd.Stderr = &stderr
+          err = cmd.Run()
 
-      if tiktokData.Data.Duration == 0 {
-        for _, i := range tiktokData.Data.Images {
-          lib.Sleep(2 * time.Second)
-
-          bytes, err := client.GetBytes(i)
+          // Check error
           if err != nil {
-            m.Reply(err.Error())
+            fmt.Println("Error:", err)
             return
           }
-          client.SendImage(m.From, bytes, "nih", m.ID) 
-        }
-        
-      } else { 
+
       
-          teks := `*TIKTOK NO WATERMARK*
-
-𖦹 *ID:* ` + tiktokData.Data.ID + `
-𖦹 *Author:* ` + tiktokData.Data.Author.UniqueID + `
-𖦹 *Region:* ` + tiktokData.Data.Region + `
-𖦹 *Judul:* ` + tiktokData.Data.Title + `
-𖦹 *Durasi:* ` + strconv.Itoa(tiktokData.Data.Duration) + `
-𖦹 *Music:* ` + tiktokData.Data.Music + `
-𖦹 *Info Musik:*
-  - *Judul:* ` + tiktokData.Data.MusicInfo.Title + `
-  - *Author:* ` + tiktokData.Data.MusicInfo.Author + `
-𖦹 *Jumlah Komentar:* ` + strconv.Itoa(tiktokData.Data.CommentCount) + `
-𖦹 *Jumlah Share:* ` + strconv.Itoa(tiktokData.Data.ShareCount) + `
-𖦹 *Didownload:* ` + strconv.Itoa(tiktokData.Data.DownloadCount) + ` kali`
-
-			bytes, err := client.GetBytes(tiktokData.Data.Play)
-			if err != nil {
-				m.Reply(err.Error())
-				return
-			}
-			client.SendVideo(m.From, bytes, teks, m.ID)
+        url, err := lib.UploadV2(randomPng)
+        if err != nil {
+            fmt.Println("Error:", err)
+            return
         }
-        */
+          bytes, err := client.GetBytes(url)
+          if err != nil {
+             fmt.Println("Error:", err)
+            return
+          }
+          client.SendImage(m.From, bytes, "", m.ID)
+        os.Remove(randomPng)
+        os.Remove(randomWebp)
+      }
+
+
+
+      //VIDEOS
+    if len(data.Video.NoWatermark) > 0 {
+      bytes, err := client.GetBytes(data.Video.NoWatermark)
+      if err != nil {
+        m.Reply(err.Error())
+        return
+      }
+      client.SendVideo(m.From, bytes, " ", m.ID)
+    } 
 		},
 	})
 }
