@@ -41,3 +41,4 @@ If you want to contribute to the development of this bot, here are the steps you
 <h2>Lisensi</h2>
 
 [GPL-3.0 license](/LICENSE.txt)
+
