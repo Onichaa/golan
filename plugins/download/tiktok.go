@@ -9,6 +9,7 @@ import (
   "strings"
   "os"
   "bytes"
+	"regexp"
   "os/exec"
 )
 
@@ -86,10 +87,11 @@ type TikTokVideo struct {
 	Music         Music  `json:"music"`
 	Author        Author `json:"author"`
 }
-        
+        regex := regexp.MustCompile(`(https?:\/\/[^\s]+)`)
+ newLink := regex.FindStringSubmatch(m.Querry) 
 
 
-	resp, err := http.Get("https://api.tiklydown.eu.org/api/download?url="+m.Querry)
+	resp, err := http.Get("https://api.tiklydown.eu.org/api/download?url="+newLink[0])
 	if err != nil {
 		fmt.Println("Error making GET request:", err)
 		return
