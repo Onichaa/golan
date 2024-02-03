@@ -32,7 +32,7 @@ func init() {
            {Role: "user", Content: m.Querry},
          }
 
-         apiURL := "https://skizo.tech/api/openai?apikey=kertas"
+         apiURL := "https://skizo.tech/api/openai?apikey=batu"
          data := map[string]interface{}{
            "messages": messages,
          }
