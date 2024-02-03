@@ -19,6 +19,11 @@ import (
 "regexp"
  "github.com/PuerkitoBio/goquery"
 )
+
+func Sleep(duration time.Duration) {
+  time.Sleep(duration)
+}
+
 /*
 func Stiktele(query string) (map[string]interface{}, error) {
   resp, err := http.Get(fmt.Sprintf("https://getstickerpack.com/stickers?query=%s", query))
