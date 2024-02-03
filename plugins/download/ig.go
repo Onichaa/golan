@@ -4,11 +4,12 @@ import (
   "inc/lib"
   "net/http"
   "encoding/json"
- // "net/url"
+  "net/url"
   "fmt"
   "strings"
-  	"io/ioutil"
-	"os"
+ //	"io/ioutil"
+ // "os"
+ // "io"
 )
 
 func init() {
@@ -25,8 +26,11 @@ func init() {
           m.Reply("Itu bukan link instagram")
         return
       }
-    
 
+
+    /*
+
+      
 type Result struct {
 	Status int    `json:"status"`
 	Media  []string `json:"media"`
@@ -102,7 +106,7 @@ type ApiResponse struct {
               m.Reply(err.Error())
               return
             }
-            client.SendVideo(m.From, bytes, "ini", m.ID)
+            client.SendVideo(m.From, bytes, "", m.ID)
           } else if typess == "image" {
               img := value["url"]
               image = append(image, img)
@@ -111,11 +115,13 @@ type ApiResponse struct {
               m.Reply(err.Error())
               return
             }
-            client.SendImage(m.From, bytes, "ini", m.ID)
+            client.SendImage(m.From, bytes, "", m.ID)
           }
       }
-
-      /*      
+      
+      
+*/
+           
       resp, err := http.Get("https://skizo.tech/api/igdl?url="+url.QueryEscape(m.Querry)+"&apikey=batu")
 
       if strings.Contains(m.Querry, "https://www.instagram.com/reel/") {
@@ -209,7 +215,7 @@ type ApiResponse struct {
           }   
           
       }
-      */
+      
     },
   })
 }
